@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>临时邮箱</title>
+  <link href="https://unpkg.com/tailwindcss@^2.0/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body>
+  <div class="container mx-auto">
+    <div class="flex justify-center">
+      <img src="https://img.icons8.com/ios-filled/50/000000/email.png" alt="临时邮箱">
+    </div>
+    <div class="mt-10">
+      <h1 class="text-3xl font-bold">临时邮箱</h1>
+      <p class="text-gray-700">保护隐私，减少垃圾邮件</p>
+    </div>
+    <div class="mt-10">
+      <form action="">
+        <div class="flex justify-between">
+          <input type="text" class="w-full border-2 border-gray-300 rounded-md px-4 py-2" placeholder="输入邮箱地址" name="email">
+          <input type="number" class="w-full border-2 border-gray-300 rounded-md px-4 py-2" placeholder="过期时间（单位：天）" name="expired">
+          <button class="px-4 py-2 bg-gray-500 text-white rounded-md">创建</button>
+        </div>
+      </form>
+    </div>
+    <div class="mt-10">
+      <h2 class="text-xl font-bold">邮件列表</h2>
+      <ul id="mail-list-ul"></ul>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+  <script>
+    new Vue({
+      el: "#app",
+      data: {
+        email: "",
+        expired: 1,
+        mails: [],
+      },
+      methods: {
+        create: function() {
+          // 获取邮箱地址
+          var email = document.querySelector("input[name='email']").value;
+
+          // 获取过期时间
+          var expired = document.querySelector("input[name='expired']").value;
+
+          // 创建临时邮箱地址
+          var url = "https://api.mailinator.com/v3/messages/" + email;
+          var response = await fetch(url);
+          var data = await response.json();
+
+          // 判断临时邮箱地址是否已过期
+          if (new Date() - Date.parse(data.createdAt) > expired * 24 * 60 * 60 * 1000) {
+            return;
+          }
+
+          // 更新临时邮箱地址
+          this.email = data.address;
+
+          // 获取邮件列表
+          this.getMails();
+        },
+        getMails: function() {
+          // 获取临时邮箱地址
+          var email = this.email;
+
+          // 获取邮件列表
+          var url = "https://api.mailinator.com/v3/messages/" + email;
+          var response = await fetch(url);
+          var data = await response.json();
+
+          // 更新邮件列表
+          this.mails = data.messages;
+        },
+      },
+    });
+  </script>
+</body>
+</html>
